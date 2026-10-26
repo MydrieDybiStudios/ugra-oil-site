@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050810">
+<title>Цифровая Экосистема «Югра.Нефть» — 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --gold: #FFAA00;
+    --gold-soft: #FFC857;
+    --cyan: #22D3EE;
+    --emerald: #34D399;
+    --text: #F2F4F8;
+    --mid: #8A93A6;
+    --lo: #4A5464;
+    --line: rgba(255,255,255,0.05);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html { scroll-behavior: smooth; }
+  html, body {
+    background: #050810;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'ss01', 'tnum';
+  }
+  body { overflow-x: hidden; }
+  ::selection { background: rgba(255,170,0,0.25); color: #fff; }
+
+  /* ═══════ STAGE ═══════ */
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    background: #050810;
+  }
+  #scene { position: absolute; inset: 0; z-index: 1; touch-action: none; }
+  #scene canvas { display: block; }
+
+  .atmosphere {
+    position: absolute; inset: 0; pointer-events: none; z-index: 2;
+    background: radial-gradient(ellipse 100% 70% at 50% 45%,
+      transparent 0%, rgba(5,8,16,0.15) 50%, rgba(5,8,16,0.92) 100%);
+  }
+  .grain {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    opacity: 0.025; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* LOADER */
+  .loader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #050810;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 1.2s var(--ease), visibility 1.2s var(--ease);
+  }
+  .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .ld-mark {
+    width: 48px; height: 48px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 32px;
+  }
+  .ld-mark::before, .ld-mark::after {
+    content: ''; position: absolute;
+    border: 1px solid rgba(255,170,0,0.28); border-radius: 3px;
+  }
+  .ld-mark::before { inset: 0; transform: rotate(45deg); animation: ldSpin 4s linear infinite; }
+  .ld-mark::after { inset: 10px; transform: rotate(45deg); animation: ldSpin 4s linear infinite reverse; }
+  @keyframes ldSpin { to { transform: rotate(405deg); } }
+  .ld-diamond {
+    width: 12px; height: 12px; background: var(--gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 24px var(--gold);
+    animation: ldPulse 2s ease-in-out infinite;
+  }
+  @keyframes ldPulse {
+    0%,100% { opacity: 1; transform: rotate(45deg) scale(1); }
+    50% { opacity: 0.55; transform: rotate(45deg) scale(0.7); }
+  }
+  .ld-bar {
+    width: 120px; height: 1px; background: rgba(255,170,0,0.1);
+    position: relative; overflow: hidden; border-radius: 1px;
+  }
+  .ld-bar::after {
+    content: ''; position: absolute; inset: 0;
+    width: var(--progress, 0%);
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px var(--gold);
+    transition: width 0.6s var(--ease);
+  }
+
+  /* HEADER */
+  .header {
+    position: absolute; top:0; left:0; right:0;
+    padding: 32px 48px; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none;
+    padding-top: calc(32px + env(safe-area-inset-top));
+    opacity: 0;
+    animation: fadeIn 1.6s var(--ease) 0.6s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .brand { pointer-events: auto; cursor: pointer; transition: opacity 0.3s; }
+  .brand:hover { opacity: 0.85; }
+  .brand-img {
+    height: 30px; width: auto; max-width: 220px;
+    object-fit: contain; display: block;
+  }
+  .brand-text {
+    font-size: 13px; font-weight: 300;
+    letter-spacing: 7px; color: var(--text);
+  }
+  .brand-text strong { font-weight: 600; color: var(--gold); }
+  .brand-text em { font-style: normal; color: var(--gold); opacity: 0.55; }
+
+  .link {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--mid); text-decoration: none;
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 3px; text-transform: uppercase;
+    pointer-events: auto;
+    transition: color 0.4s var(--ease);
+    padding: 8px 0;
+  }
+  .link:hover { color: var(--gold); }
+  .link .arrow { font-size: 14px; transition: transform 0.4s var(--ease); }
+  .link:hover .arrow { transform: translate(3px, -3px); }
+
+  /* HERO */
+  .hero {
+    position: absolute;
+    top: 50%; left: 48px;
+    transform: translateY(-50%);
+    z-index: 10; pointer-events: none;
+    max-width: 520px;
+    opacity: 0;
+    animation: heroIn 1.8s var(--ease) 1.2s forwards;
+  }
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(calc(-50% + 20px)); }
+    to { opacity: 1; transform: translateY(-50%); }
+  }
+  .hero h1 {
+    font-size: clamp(34px, 3.6vw, 52px);
+    font-weight: 200; line-height: 1.05;
+    letter-spacing: -1.6px;
+    color: var(--text); margin-bottom: 20px;
+  }
+  .hero h1 strong { display: block; font-weight: 600; color: var(--gold); }
+  .hero p {
+    font-size: 14px; font-weight: 300;
+    line-height: 1.6; color: var(--mid);
+    max-width: 340px;
+  }
+
+  /* NAV */
+  .nav {
+    position: absolute;
+    top: 50%; right: 48px;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 4px;
+    opacity: 0;
+    animation: heroIn 1.8s var(--ease) 1.4s forwards;
+    pointer-events: auto;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 20px;
+    padding: 16px 0; cursor: pointer;
+    text-decoration: none;
+    transition: all 0.5s var(--ease);
+    justify-content: flex-end;
+    position: relative;
+  }
+  .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--lo);
+    letter-spacing: 1px;
+    transition: color 0.4s var(--ease);
+  }
+  .nav-label {
+    font-size: 14px; font-weight: 400;
+    letter-spacing: 5px; text-transform: uppercase;
+    color: var(--mid);
+    transition: color 0.4s var(--ease), letter-spacing 0.4s var(--ease);
+  }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--lo);
+    transition: all 0.5s var(--ease);
+    flex-shrink: 0; position: relative;
+  }
+  .nav-dot::before {
+    content: ''; position: absolute; inset: -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, currentColor, transparent 65%);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .nav-item[data-id="edu"]:hover .nav-dot,
+  .nav-item[data-id="edu"].active .nav-dot { background: var(--cyan); color: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
+  .nav-item[data-id="edu"]:hover .nav-dot::before,
+  .nav-item[data-id="edu"].active .nav-dot::before { opacity: 0.7; }
+  .nav-item[data-id="prod"]:hover .nav-dot,
+  .nav-item[data-id="prod"].active .nav-dot { background: var(--gold); color: var(--gold); box-shadow: 0 0 14px var(--gold); }
+  .nav-item[data-id="prod"]:hover .nav-dot::before,
+  .nav-item[data-id="prod"].active .nav-dot::before { opacity: 0.7; }
+  .nav-item[data-id="eco"]:hover .nav-dot,
+  .nav-item[data-id="eco"].active .nav-dot { background: var(--emerald); color: var(--emerald); box-shadow: 0 0 14px var(--emerald); }
+  .nav-item[data-id="eco"]:hover .nav-dot::before,
+  .nav-item[data-id="eco"].active .nav-dot::before { opacity: 0.7; }
+  .nav-item[data-id="edu"]:hover .nav-label,
+  .nav-item[data-id="edu"].active .nav-label { color: var(--cyan); }
+  .nav-item[data-id="prod"]:hover .nav-label,
+  .nav-item[data-id="prod"].active .nav-label { color: var(--gold); }
+  .nav-item[data-id="eco"]:hover .nav-label,
+  .nav-item[data-id="eco"].active .nav-label { color: var(--emerald); }
+  .nav-item:hover .nav-label,
+  .nav-item.active .nav-label { letter-spacing: 6px; }
+  .nav-item:hover .nav-num,
+  .nav-item.active .nav-num { color: var(--gold); }
+
+  /* CAPTION */
+  #caption {
+    position: absolute; top:0; left:0;
+    z-index: 6; pointer-events: none;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease);
+    white-space: nowrap;
+  }
+  #caption.visible { opacity: 1; }
+  .cap-brand {
+    font-size: 12px; font-weight: 300;
+    letter-spacing: 10px; color: var(--gold);
+    text-shadow: 0 0 24px rgba(255,170,0,0.5);
+    margin-left: 10px;
+  }
+  .cap-brand strong { font-weight: 600; }
+  .cap-brand em { font-style: normal; opacity: 0.55; }
+
+  /* SCROLL CUE */
+  .scroll-cue {
+    position: absolute;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    color: var(--lo); text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeIn 1.6s var(--ease) 2.2s forwards;
+    transition: color 0.4s var(--ease);
+    pointer-events: auto;
+  }
+  .scroll-cue:hover { color: var(--gold); }
+  .scroll-cue-arrow {
+    font-size: 14px;
+    animation: cueBob 2s ease-in-out infinite;
+  }
+  @keyframes cueBob {
+    0%,100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(5px); opacity: 1; }
+  }
+
+  /* ═══════ COMMON SECTION ═══════ */
+  .section {
+    position: relative;
+    background: #050810;
+    padding: 120px 48px;
+  }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .section-eyebrow::before {
+    content: ''; width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .section-title {
+    font-size: clamp(30px, 4vw, 52px);
+    font-weight: 200; line-height: 1.05;
+    letter-spacing: -1.6px;
+    color: var(--text); margin-bottom: 24px;
+    max-width: 800px;
+  }
+  .section-title strong { font-weight: 600; color: var(--gold); }
+  .section-sub {
+    font-size: 15px; font-weight: 300;
+    line-height: 1.65; color: var(--mid);
+    max-width: 620px;
+  }
+
+  /* ABOUT */
+  .about { border-top: 1px solid var(--line); position: relative; }
+  .about::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 0; right: 0; height: 80px;
+    background: linear-gradient(to bottom, transparent, #050810);
+    pointer-events: none;
+  }
+  .about-head {
+    margin-bottom: 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+  }
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 80px;
+  }
+  .stat {
+    background: #050810;
+    padding: 36px 28px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: background 0.4s var(--ease);
+  }
+  .stat:hover { background: #08090f; }
+  .stat-value {
+    font-size: 42px; font-weight: 200;
+    letter-spacing: -1.5px;
+    color: var(--gold); line-height: 1;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .stat-value .unit {
+    font-size: 16px; font-weight: 400;
+    color: var(--mid); letter-spacing: 0;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--lo);
+  }
+
+  /* MODULES */
+  .modules { border-top: 1px solid var(--line); }
+  .modules-head {
+    margin-bottom: 72px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+  }
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .module {
+    background: #050810;
+    padding: 44px 36px 40px;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: background 0.5s var(--ease);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    min-height: 520px;
+  }
+  .module::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: currentColor; opacity: 0;
+    transition: opacity 0.5s var(--ease);
+  }
+  .module[data-id="edu"]  { color: var(--cyan); }
+  .module[data-id="prod"] { color: var(--gold); }
+  .module[data-id="eco"]  { color: var(--emerald); }
+  .module:hover { background: #08090f; }
+  .module:hover::before { opacity: 1; }
+
+  .module-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--lo); margin-bottom: 40px;
+    transition: color 0.5s var(--ease);
+  }
+  .module:hover .module-num { color: currentColor; }
+  .module-name {
+    font-size: 24px; font-weight: 500;
+    letter-spacing: -0.4px; line-height: 1.15;
+    color: var(--text); margin-bottom: 6px;
+    transition: color 0.4s var(--ease);
+  }
+  .module:hover .module-name { color: currentColor; }
+  .module-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lo);
+    margin-bottom: 22px;
+  }
+  .module-desc {
+    font-size: 14px; font-weight: 300;
+    line-height: 1.65; color: var(--mid);
+    margin-bottom: 24px;
+  }
+  .module-list {
+    list-style: none;
+    margin-bottom: auto;
+  }
+  .module-list li {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--mid);
+    line-height: 1.5;
+    padding: 8px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    transition: color 0.4s var(--ease);
+  }
+  .module-list li:last-child { border-bottom: none; }
+  .module-list li::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.45;
+    flex-shrink: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.4s var(--ease);
+  }
+  .module:hover .module-list li { color: var(--text); }
+  .module:hover .module-list li::before { opacity: 0.9; }
+  .module-cta {
+    margin-top: 32px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: currentColor;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    transition: all 0.4s var(--ease);
+  }
+  .module-cta .arrow {
+    transition: transform 0.4s var(--ease);
+    font-size: 14px;
+  }
+  .module:hover .module-cta .arrow { transform: translate(4px, -4px); }
+
+  /* TEAM */
+  .team { border-top: 1px solid var(--line); }
+  .team-head { margin-bottom: 72px; }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .person {
+    background: #050810;
+    padding: 36px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+    transition: background 0.4s var(--ease);
+  }
+  .person:hover { background: #08090f; }
+  .person-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .person-name {
+    font-size: 18px; font-weight: 500;
+    letter-spacing: -0.3px; line-height: 1.3;
+    color: var(--text);
+  }
+  .person-desc {
+    font-size: 13px; font-weight: 300;
+    line-height: 1.6; color: var(--mid);
+  }
+
+  /* PARTNERS */
+  .partners { border-top: 1px solid var(--line); }
+  .partners-head { margin-bottom: 56px; }
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .partner {
+    background: #050810;
+    padding: 32px 28px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: background 0.4s var(--ease);
+    min-height: 160px;
+    justify-content: space-between;
+  }
+  .partner:hover { background: #08090f; }
+  .partner-cat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--lo);
+  }
+  .partner-name {
+    font-size: 15px; font-weight: 500;
+    letter-spacing: -0.2px; line-height: 1.35;
+    color: var(--text);
+  }
+
+  /* FOOTER */
+  .footer {
+    background: #050810;
+    padding: 48px 48px 44px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
+  }
+  .footer-brand {
+    font-size: 13px; font-weight: 300;
+    letter-spacing: 7px; color: var(--text);
+    margin-bottom: 12px;
+  }
+  .footer-brand strong { font-weight: 600; color: var(--gold); }
+  .footer-brand em { font-style: normal; color: var(--gold); opacity: 0.55; }
+  .footer-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lo); line-height: 1.8;
+  }
+  .footer-right {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lo); text-align: right; line-height: 1.8;
+  }
+  .footer-right a {
+    color: var(--mid); text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-right a:hover { color: var(--gold); }
+
+  /* REDIRECT */
+  #redirect {
+    position: fixed; inset: 0; z-index: 500;
+    background: radial-gradient(circle at 50% 50%,
+      rgba(255,170,0,0.1) 0%, rgba(5,8,16,0.98) 55%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s var(--ease);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  #redirect.active { opacity: 1; pointer-events: auto; }
+  #redirect .rd-mark {
+    width: 44px; height: 44px; position: relative;
+  }
+  #redirect .rd-mark::before,
+  #redirect .rd-mark::after {
+    content: ''; position: absolute;
+    border: 1px solid rgba(255,170,0,0.3);
+    border-radius: 3px;
+  }
+  #redirect .rd-mark::before { inset: 0; transform: rotate(45deg); animation: ldSpin 2s linear infinite; }
+  #redirect .rd-mark::after { inset: 9px; transform: rotate(45deg); animation: ldSpin 2s linear infinite reverse; }
+  #redirect .rd-diamond {
+    position: absolute; top: 50%; left: 50%;
+    width: 10px; height: 10px; background: var(--gold);
+    transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 24px var(--gold);
+  }
+  #redirect .rd-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 5px;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  /* ═══════ RESPONSIVE ═══════ */
+  @media (max-width: 1024px) {
+    .header { padding: 26px 32px; padding-top: calc(26px + env(safe-area-inset-top)); }
+    .hero { left: 32px; max-width: 400px; }
+    .nav { right: 32px; }
+    .section { padding: 100px 32px; }
+    .footer { padding: 40px 32px 36px; }
+    .about-head, .modules-head { gap: 48px; }
+  }
+
+  @media (max-width: 860px) {
+    .modules-grid { grid-template-columns: 1fr; }
+    .module { min-height: auto; padding: 36px 28px 32px; }
+    .module-num { margin-bottom: 24px; }
+    .about-stats { grid-template-columns: repeat(2, 1fr); margin-top: 56px; }
+    .about-head, .modules-head { grid-template-columns: 1fr; gap: 32px; }
+    .team-grid { grid-template-columns: 1fr; }
+    .partners-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 720px) {
+    .header { padding: 20px 24px; padding-top: calc(20px + env(safe-area-inset-top)); }
+    .brand-img { height: 26px; }
+    .link { font-size: 11px; letter-spacing: 2px; }
+    .link .arrow { font-size: 12px; }
+
+    .hero {
+      top: 90px; left: 24px; right: 24px;
+      transform: none; max-width: none;
+      animation: heroInMob 1.6s var(--ease) 0.6s forwards;
+    }
+    @keyframes heroInMob {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero h1 { font-size: 28px; letter-spacing: -1.2px; margin-bottom: 12px; }
+    .hero p { font-size: 13px; max-width: none; }
+
+    .nav {
+      top: auto; bottom: 76px;
+      left: 24px; right: 24px;
+      transform: none;
+      flex-direction: row; gap: 0;
+      justify-content: space-between;
+      animation: heroInMob 1.6s var(--ease) 0.9s forwards;
+    }
+    .nav-item {
+      flex-direction: column-reverse;
+      gap: 8px; padding: 10px 4px;
+      justify-content: center; align-items: center;
+      flex: 1;
+    }
+    .nav-num { display: none; }
+    .nav-label { font-size: 10px; letter-spacing: 2px; }
+    .nav-item:hover .nav-label,
+    .nav-item.active .nav-label { letter-spacing: 2.5px; }
+
+    .cap-brand { font-size: 10px; letter-spacing: 6px; }
+    .scroll-cue { bottom: 20px; font-size: 8px; }
+
+    .section { padding: 80px 24px; }
+    .section-title { font-size: 30px; letter-spacing: -1px; }
+    .section-sub { font-size: 14px; }
+    .module-name { font-size: 20px; }
+    .stat-value { font-size: 32px; }
+    .stat { padding: 28px 22px; }
+    .partners-grid { grid-template-columns: 1fr; }
+    .footer { padding: 32px 24px 36px; grid-template-columns: 1fr; gap: 24px; }
+    .footer-right { text-align: left; }
+  }
+
+  @media (max-width: 420px) {
+    .hero h1 { font-size: 24px; }
+    .nav-label { font-size: 9px; }
+    .about-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="ld-mark"><div class="ld-diamond"></div></div>
+  <div class="ld-bar" id="ld-bar"></div>
+</div>
+
+<!-- ═══════ STAGE (3D) ═══════ -->
+<section class="stage">
+  <div id="scene"></div>
+  <div class="atmosphere"></div>
+  <div class="grain"></div>
+
+  <header class="header">
+    <div class="brand">
+      <img src="logo.png" alt="ЮГРА.НЕФТЬ" class="brand-img"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="brand-text" style="display:none">ЮГРА<em>.</em><strong>НЕФТЬ</strong></div>
+    </div>
+    <a class="link" href="https://ugra-eco.onrender.com">
+      <span>Модули</span>
+      <span class="arrow">↗</span>
+    </a>
+  </header>
+
+  <section class="hero">
+    <h1>Цифровая Экосистема<br><strong>«Югра.Нефть»</strong></h1>
+    <p>Образовательная платформа о нефтегазовой отрасли ХМАО для школьников Югры.</p>
+  </section>
+
+  <nav class="nav">
+    <a class="nav-item active" data-id="edu" href="#modules">
+      <span class="nav-num">01</span>
+      <span class="nav-label">Образование</span>
+      <span class="nav-dot"></span>
+    </a>
+    <a class="nav-item" data-id="prod" href="#modules">
+      <span class="nav-num">02</span>
+      <span class="nav-label">Профессия</span>
+      <span class="nav-dot"></span>
+    </a>
+    <a class="nav-item" data-id="eco" href="#modules">
+      <span class="nav-num">03</span>
+      <span class="nav-label">Экология</span>
+      <span class="nav-dot"></span>
+    </a>
+  </nav>
+
+  <div id="caption">
+    <div class="cap-brand">ЮГРА<em>.</em><strong>НЕФТЬ</strong></div>
+  </div>
+
+  <a href="#about" class="scroll-cue">
+    <span>Скролл</span>
+    <span class="scroll-cue-arrow">↓</span>
+  </a>
+</section>
+
+<!-- ═══════ ABOUT ═══════ -->
+<section class="section about" id="about">
+  <div class="section-inner">
+    <div class="about-head">
+      <div>
+        <div class="section-eyebrow">О проекте</div>
+        <h2 class="section-title">Цифровая образовательная <strong>экосистема</strong></h2>
+      </div>
+      <p class="section-sub">
+        Проект создан учащимися 11А Роснефть-класса школы №1 пгт. Пойковский при поддержке
+        Музея нефти имени Р. И. Кузоваткина. Объединяет интерактивные курсы, VR/AR-технологии,
+        промышленный IoT и профессиональную ориентацию для школьников ХМАО-Югры.
+      </p>
+    </div>
+
+    <div class="about-stats">
+      <div class="stat">
+        <div class="stat-value">7<span class="unit">курсов</span></div>
+        <div class="stat-label">Авторских программ</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">70<span class="unit">%</span></div>
+        <div class="stat-label">Порог прохождения</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">VR<span class="unit">/ AR</span></div>
+        <div class="stat-label">Технологии Varwin</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3<span class="unit">направления</span></div>
+        <div class="stat-label">Модуля экосистемы</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ MODULES ═══════ -->
+<section class="section modules" id="modules">
+  <div class="section-inner">
+    <div class="modules-head">
+      <div>
+        <div class="section-eyebrow">Три направления экосистемы</div>
+        <h2 class="section-title">Модули <strong>платформы</strong></h2>
+      </div>
+      <p class="section-sub">
+        Каждое направление — самостоятельная цифровая среда с собственным набором инструментов,
+        курсов и материалов. Прохождение завершается именным сертификатом.
+      </p>
+    </div>
+
+    <div class="modules-grid">
+
+      <!-- ═══ ОБРАЗОВАНИЕ ═══ -->
+      <a class="module" data-id="edu" id="module-edu" href="https://ugra-edu.onrender.com">
+        <div class="module-num">01 / ОБРАЗОВАНИЕ</div>
+        <h3 class="module-name">Учебная среда</h3>
+        <div class="module-tagline">VR / AR · Курсы · Музей</div>
+        <p class="module-desc">
+          Интерактивные курсы о нефтегазовой отрасли и технологиях добычи на базе VR-платформы Varwin,
+          объединённые с экспозицией музея нефти.
+        </p>
+        <ul class="module-list">
+          <li>VR/AR-модули на платформе Varwin</li>
+          <li>Курсы с тестированием и порогом 70%</li>
+          <li>Экспозиции Музея нефти им. Кузоваткина</li>
+          <li>Именные сертификаты о прохождении</li>
+          <li>7 авторских образовательных программ</li>
+        </ul>
+        <div class="module-cta">
+          <span>Открыть модуль</span>
+          <span class="arrow">↗</span>
+        </div>
+      </a>
+
+      <!-- ═══ ПРОФЕССИЯ / ПРОИЗВОДСТВО ═══ -->
+      <a class="module" data-id="prod" id="module-prod" href="prod/index.html">
+        <div class="module-num">02 / ПРОФЕССИЯ</div>
+        <h3 class="module-name">Производственная среда</h3>
+        <div class="module-tagline">IoT · Каски · Mesh · Дашборд</div>
+        <p class="module-desc">
+          Промышленный IoT и цифровые системы мониторинга безопасности на нефтегазовом объекте.
+          Работа с реальным прототипом умной каски на ESP32.
+        </p>
+        <ul class="module-list">
+          <li>Умная каска: пульс, SpO₂, газ, GPS, микрофон</li>
+          <li>Mesh-сеть BLE + LoRa между касками</li>
+          <li>Дашборд диспетчера с картой и KPI</li>
+          <li>Журнал SOS и тревог с детальной информацией</li>
+          <li>REST API + MQTT для интеграции с ERP</li>
+        </ul>
+        <div class="module-cta">
+          <span>Открыть модуль</span>
+          <span class="arrow">↗</span>
+        </div>
+      </a>
+
+      <!-- ═══ ЭКОЛОГИЯ ═══ -->
+      <a class="module" data-id="eco" id="module-eco" href="https://ugra-eco.onrender.com">
+        <div class="module-num">03 / ЭКОЛОГИЯ</div>
+        <h3 class="module-name">Экосистема будущего</h3>
+        <div class="module-tagline">Зелёная Югра · 16 модулей</div>
+        <p class="module-desc">
+          Экологический модуль «Зелёная Югра»: интерактивные квесты, симулятор рекультивации,
+          спутниковый мониторинг и дерево достижений.
+        </p>
+        <ul class="module-list">
+          <li>Эко-квесты, дебат-клуб, мастерская проектов</li>
+          <li>Симуляторы: рекультивация и управление предприятием</li>
+          <li>Спутниковый мониторинг и калькулятор CO₂</li>
+          <li>ИИ-помощник «Эколог» на базе знаний</li>
+          <li>Дерево достижений и рейтинг школ ХМАО</li>
+        </ul>
+        <div class="module-cta">
+          <span>Открыть модуль</span>
+          <span class="arrow">↗</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ TEAM ═══════ -->
+<section class="section team">
+  <div class="section-inner">
+    <div class="team-head">
+      <div class="section-eyebrow">Команда проекта</div>
+      <h2 class="section-title">Авторы и <strong>руководство</strong></h2>
+    </div>
+
+    <div class="team-grid">
+      <div class="person">
+        <div class="person-role">Автор · 11А РН</div>
+        <div class="person-name">Пестриков Кирилл<br>Валерьевич</div>
+        <p class="person-desc">Разработка цифровой платформы, визуализация и техническая реализация проекта.</p>
+      </div>
+      <div class="person">
+        <div class="person-role">Автор · 11А РН</div>
+        <div class="person-name">Морозов Антон<br>Павлович</div>
+        <p class="person-desc">Контент курсов, методическая работа и взаимодействие с партнёрами проекта.</p>
+      </div>
+      <div class="person">
+        <div class="person-role">Научный руководитель</div>
+        <div class="person-name">Рахманов Александр<br>Валерьевич</div>
+        <p class="person-desc">Научное руководство, методология проекта и академическая поддержка.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ PARTNERS ═══════ -->
+<section class="section partners">
+  <div class="section-inner">
+    <div class="partners-head">
+      <div class="section-eyebrow">Партнёры</div>
+      <h2 class="section-title">Поддержка <strong>проекта</strong></h2>
+    </div>
+
+    <div class="partners-grid">
+      <div class="partner">
+        <div class="partner-cat">Образование</div>
+        <div class="partner-name">МБОУ «СОШ № 1»<br>пгт. Пойковский</div>
+      </div>
+      <div class="partner">
+        <div class="partner-cat">Организация</div>
+        <div class="partner-name">Департамент<br>образования ХМАО</div>
+      </div>
+      <div class="partner">
+        <div class="partner-cat">Информация</div>
+        <div class="partner-name">РН-Юганскнефтегаз</div>
+      </div>
+      <div class="partner">
+        <div class="partner-cat">Технологии</div>
+        <div class="partner-name">Varwin<br>VR-платформа</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="footer">
+  <div>
+    <div class="footer-brand">ЮГРА<em>.</em><strong>НЕФТЬ</strong></div>
+    <div class="footer-sub">
+      Цифровая экосистема · 2026<br>
+      Музей нефти им. Р. И. Кузоваткина · СОШ №1, пгт. Пойковский
+    </div>
+  </div>
+  <div class="footer-right">
+    ХМАО — Югра<br>
+    <a href="https://ugra-eco.onrender.com">eco-модуль ↗</a> · <a href="prod/index.html">prod-модуль ↗</a>
+  </div>
+</footer>
+
+<!-- ═══════ REDIRECT ═══════ -->
+<div id="redirect">
+  <div class="rd-mark"><div class="rd-diamond"></div></div>
+  <div class="rd-text" id="rd-text">Открываем модуль</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ═══════════════════════════════════════════════
+   ССЫЛКИ — КУДА ВЕДЁТ КЛИК ПО ПЛАТФОРМЕ
+   ═══════════════════════════════════════════════ */
+const LINKS = {
+  edu:  'https://ugra-edu.onrender.com',
+  prod: 'prod/index.html',
+  eco:  'https://ugra-eco.onrender.com'
+};
+
+/* LOADER */
+const ldBar = document.getElementById('ld-bar');
+let loadPct = 0;
+function setLoad(p) {
+  if (p > loadPct) { loadPct = p; ldBar.style.setProperty('--progress', p + '%'); }
+}
+setLoad(8);
+
+/* SCENE */
+const W = () => innerWidth, H = () => innerHeight;
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+const C = { gold: 0xFFAA00, goldSoft: 0xFFC857, cyan: 0x22D3EE, emerald: 0x34D399, bg: 0x050810 };
+
+const sceneEl = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(C.bg, 0.008);
+
+const camera = new THREE.PerspectiveCamera(38, W()/H(), 0.1, 800);
+camera.position.set(0, 6, 32);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: !isMobile, alpha: true, powerPreference: 'high-performance'
+});
+renderer.setSize(W(), H());
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+sceneEl.appendChild(renderer.domElement);
+
+setLoad(24);
+
+scene.add(new THREE.AmbientLight(0x8899bb, 0.35));
+const key = new THREE.DirectionalLight(0xffe4b5, 1.6);
+key.position.set(8, 16, 10); scene.add(key);
+const rim = new THREE.DirectionalLight(0x4a7bb5, 0.9);
+rim.position.set(-10, 6, -8); scene.add(rim);
+const fill = new THREE.PointLight(C.gold, 1.5, 40, 2);
+fill.position.set(0, 2, 3); scene.add(fill);
+
+/* GLOW */
+function makeGlowTex() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(256,256,0,256,256,256);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.15, 'rgba(255,220,150,0.9)');
+  g.addColorStop(0.35, 'rgba(255,180,60,0.35)');
+  g.addColorStop(0.65, 'rgba(255,170,0,0.08)');
+  g.addColorStop(1, 'rgba(255,170,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 512, 512);
+  return new THREE.CanvasTexture(c);
+}
+const glowTex = makeGlowTex();
+function glowSprite(color, size, opacity) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex, color,
+    transparent: true, opacity: opacity ?? 0.7,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  s.scale.set(size, size, 1);
+  return s;
+}
+
+/* FRESNEL */
+function fresnelMat(color, inner = 0.35, power = 2.5) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uInner: { value: inner },
+      uPower: { value: power },
+      uTime: { value: 0 }
+    },
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV; varying vec3 vW;
+      void main() {
+        vec4 w = modelMatrix * vec4(position, 1.0);
+        vW = w.xyz;
+        vV = normalize(cameraPosition - w.xyz);
+        vN = normalize(mat3(modelMatrix) * normal);
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor; uniform float uInner; uniform float uPower; uniform float uTime;
+      varying vec3 vN; varying vec3 vV; varying vec3 vW;
+      void main() {
+        float f = pow(1.0 - max(dot(vN, vV), 0.0), uPower);
+        float pulse = 0.92 + 0.08 * sin(uTime * 1.4);
+        f *= pulse;
+        vec3 toCam = normalize(cameraPosition - vW);
+        float facing = max(dot(vN, toCam), 0.0);
+        vec3 col = mix(vec3(0.06, 0.03, 0.0), uColor, f);
+        col += uColor * uInner * facing * 0.4;
+        gl_FragColor = vec4(col, f * 0.9 + 0.08);
+      }
+    `,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+}
+const fresnels = [];
+
+/* CORE */
+const coreGroup = new THREE.Group();
+coreGroup.position.y = 2.5;
+scene.add(coreGroup);
+
+const coreInnerGeo = new THREE.IcosahedronGeometry(2.3, 3);
+const coreInner = new THREE.Mesh(coreInnerGeo, new THREE.MeshStandardMaterial({
+  color: 0x0a0a12, metalness: 1.0, roughness: 0.4,
+  emissive: 0x2a1800, emissiveIntensity: 0.4
+}));
+coreGroup.add(coreInner);
+
+const wire = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(2.42, 1), 1),
+  new THREE.LineBasicMaterial({ color: C.gold, transparent: true, opacity: 0.35 })
+);
+coreGroup.add(wire);
+
+const wireFine = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(2.55, 2), 1),
+  new THREE.LineBasicMaterial({ color: C.gold, transparent: true, opacity: 0.12 })
+);
+coreGroup.add(wireFine);
+
+const fresnelShellGeo = new THREE.IcosahedronGeometry(2.65, 3);
+const fresnelShell = new THREE.Mesh(fresnelShellGeo, fresnelMat(C.gold, 0.55, 3.0));
+coreGroup.add(fresnelShell);
+fresnels.push(fresnelShell.material);
+
+const spark = new THREE.Mesh(
+  new THREE.OctahedronGeometry(0.5, 2),
+  new THREE.MeshBasicMaterial({ color: 0xffffff })
+);
+coreGroup.add(spark);
+
+const coreGlow = glowSprite(C.goldSoft, 14, 0.55);
+coreGroup.add(coreGlow);
+const coreGlowWhite = glowSprite(0xffffff, 4, 0.9);
+coreGroup.add(coreGlowWhite);
+
+const coreOrbit = new THREE.Mesh(
+  new THREE.TorusGeometry(4.0, 0.008, 6, 200),
+  new THREE.MeshBasicMaterial({ color: C.gold, transparent: true, opacity: 0.5 })
+);
+coreOrbit.rotation.x = Math.PI / 2.3;
+coreOrbit.rotation.z = 0.3;
+coreGroup.add(coreOrbit);
+
+const coreSats = [];
+for (let i = 0; i < 3; i++) {
+  const s = new THREE.Mesh(
+    new THREE.SphereGeometry(0.07, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  s.userData = { angle: (i / 3) * Math.PI * 2, speed: 0.4 };
+  coreGroup.add(s);
+  coreSats.push(s);
+}
+
+/* ═══════ REFLECTION — заметное, но деликатное ═══════ */
+const reflGroup = new THREE.Group();
+reflGroup.position.y = -6.4;
+reflGroup.scale.set(0.85, -0.3, 0.85);
+scene.add(reflGroup);
+
+const reflInner = new THREE.Mesh(coreInnerGeo, new THREE.MeshBasicMaterial({
+  color: 0xFFAA00, transparent: true, opacity: 0.045, depthWrite: false
+}));
+reflInner.position.y = -2.5;
+reflGroup.add(reflInner);
+
+const reflFresnel = new THREE.Mesh(fresnelShellGeo, fresnelMat(C.gold, 0.09, 3.8));
+reflFresnel.material.uniforms.uInner.value = 0.09;
+reflFresnel.position.y = -2.5;
+reflGroup.add(reflFresnel);
+fresnels.push(reflFresnel.material);
+
+/* PLATFORMS */
+const DEFS = [
+  { id:'edu',  pos:[-11, -3.5, 0], color: C.cyan,    sym: 'icosa'  },
+  { id:'prod', pos:[0,   -3.5, 8], color: C.gold,    sym: 'octa'   },
+  { id:'eco',  pos:[11,  -3.5, 0], color: C.emerald, sym: 'dodeca' }
+];
+const platforms = [];
+
+function createPlatform(def) {
+  const g = new THREE.Group();
+  g.position.set(def.pos[0], def.pos[1], def.pos[2]);
+  g.userData = { type: 'platform', id: def.id };
+  const R = 2.6;
+
+  g.add(new THREE.Mesh(
+    new THREE.CylinderGeometry(R, R * 1.05, 0.35, 64),
+    new THREE.MeshStandardMaterial({
+      color: 0x0a0e18, metalness: 0.95, roughness: 0.15,
+      emissive: def.color, emissiveIntensity: 0.04
+    })
+  ));
+
+  const topRing = new THREE.Mesh(
+    new THREE.TorusGeometry(R * 1.002, 0.015, 8, 128),
+    new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.95 })
+  );
+  topRing.rotation.x = Math.PI / 2;
+  topRing.position.y = 0.185;
+  g.add(topRing);
+
+  const outerRingGroup = new THREE.Group();
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const major = i % 4 === 0;
+    const seg = new THREE.Mesh(
+      new THREE.PlaneGeometry(major ? 0.18 : 0.08, 0.01),
+      new THREE.MeshBasicMaterial({
+        color: def.color, transparent: true,
+        opacity: major ? 0.6 : 0.22,
+        side: THREE.DoubleSide, depthWrite: false
+      })
+    );
+    seg.position.set(Math.cos(a) * R * 1.14, -0.06, Math.sin(a) * R * 1.14);
+    seg.rotation.x = -Math.PI / 2;
+    seg.rotation.z = -a;
+    outerRingGroup.add(seg);
+  }
+  g.add(outerRingGroup);
+
+  const platFresnel = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 1.04, R * 1.06, 0.5, 64, 1, true),
+    fresnelMat(def.color, 0.35, 2.5)
+  );
+  g.add(platFresnel);
+  fresnels.push(platFresnel.material);
+
+  const innerRing = new THREE.Mesh(
+    new THREE.RingGeometry(R * 0.55, R * 0.57, 96),
+    new THREE.MeshBasicMaterial({
+      color: def.color, transparent: true, opacity: 0.28,
+      side: THREE.DoubleSide, depthWrite: false
+    })
+  );
+  innerRing.rotation.x = -Math.PI / 2;
+  innerRing.position.y = 0.185;
+  g.add(innerRing);
+
+  const surfaceGlow = glowSprite(def.color, 6.5, 0.35);
+  surfaceGlow.position.y = 0.25;
+  g.add(surfaceGlow);
+
+  const beamMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 0.6, R * 0.92, 6, 32, 1, true),
+    new THREE.MeshBasicMaterial({
+      color: def.color, transparent: true, opacity: 0.035,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    })
+  );
+  beamMesh.position.y = 3;
+  g.add(beamMesh);
+
+  let symGeo;
+  if (def.sym === 'icosa')  symGeo = new THREE.IcosahedronGeometry(0.6, 1);
+  if (def.sym === 'octa')   symGeo = new THREE.OctahedronGeometry(0.7, 1);
+  if (def.sym === 'dodeca') symGeo = new THREE.DodecahedronGeometry(0.6, 1);
+
+  const symSolid = new THREE.Mesh(symGeo, new THREE.MeshStandardMaterial({
+    color: 0x050810, metalness: 1.0, roughness: 0.3,
+    emissive: def.color, emissiveIntensity: 0.6
+  }));
+  symSolid.position.y = 5.4;
+  g.add(symSolid);
+
+  const symFresnel = new THREE.Mesh(symGeo, fresnelMat(def.color, 0.7, 2.2));
+  symFresnel.scale.setScalar(1.08);
+  symFresnel.position.y = 5.4;
+  g.add(symFresnel);
+  fresnels.push(symFresnel.material);
+
+  const symWire = new THREE.LineSegments(
+    new THREE.EdgesGeometry(symGeo, 1),
+    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 })
+  );
+  symWire.position.y = 5.4;
+  symWire.scale.setScalar(1.12);
+  g.add(symWire);
+
+  const symGlow = glowSprite(def.color, 4.5, 0.75);
+  symGlow.position.y = 5.4;
+  g.add(symGlow);
+
+  const symRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.25, 0.008, 6, 96),
+    new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.55 })
+  );
+  symRing.position.y = 5.4;
+  symRing.rotation.x = Math.PI / 2.5;
+  g.add(symRing);
+
+  const pc = isMobile ? 14 : 26;
+  const pp = new Float32Array(pc * 3);
+  const ps = new Float32Array(pc);
+  for (let i = 0; i < pc; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = R * 0.3 + Math.random() * R * 0.55;
+    pp[i*3]     = Math.cos(a) * r;
+    pp[i*3 + 1] = 0.4 + Math.random() * 5;
+    pp[i*3 + 2] = Math.sin(a) * r;
+    ps[i] = 0.3 + Math.random() * 0.6;
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+  const sparks = new THREE.Points(pg, new THREE.PointsMaterial({
+    color: 0xffffff, size: 0.07, transparent: true, opacity: 0.7,
+    blending: THREE.AdditiveBlending, sizeAttenuation: true, depthWrite: false
+  }));
+  sparks.userData.speeds = ps;
+  g.add(sparks);
+
+  const hb = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 1.3, R * 1.3, 9, 12),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hb.position.y = 3;
+  g.add(hb);
+
+  Object.assign(g.userData, {
+    topRing, outerRingGroup, surfaceGlow, beamMesh,
+    symSolid, symFresnel, symWire, symGlow, symRing,
+    sparks, hitbox: hb, R
+  });
+
+  scene.add(g);
+  platforms.push(g);
+}
+DEFS.forEach(createPlatform);
+
+setLoad(60);
+
+/* CONNECTIONS */
+const connections = [];
+platforms.forEach(p => {
+  const sp = p.position.clone(); sp.y += 5.4;
+  const cp = new THREE.Vector3(0, 2.5, 0);
+  const mid = new THREE.Vector3().addVectors(sp, cp).multiplyScalar(0.5);
+  mid.y += 2;
+  const curve = new THREE.CatmullRomCurve3([sp, mid, cp], false, 'catmullrom', 0.5);
+
+  const line = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 60, 0.012, 6, false),
+    new THREE.MeshBasicMaterial({ color: p.userData.id === 'edu' ? C.cyan : p.userData.id === 'eco' ? C.emerald : C.gold, transparent: true, opacity: 0.4 })
+  );
+  scene.add(line);
+
+  const glowLine = new THREE.Mesh(
+    new THREE.TubeGeometry(curve, 60, 0.06, 6, false),
+    new THREE.MeshBasicMaterial({
+      color: line.material.color, transparent: true, opacity: 0.05,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    })
+  );
+  scene.add(glowLine);
+
+  const dots = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new THREE.Mesh(
+      new THREE.SphereGeometry(0.05, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
+    );
+    d.userData.offset = i / 5;
+    scene.add(d);
+    dots.push(d);
+  }
+  connections.push({ curve, dots, line, glowLine });
+});
+
+/* FLOOR */
+const floorGroup = new THREE.Group();
+floorGroup.position.y = -6.4;
+scene.add(floorGroup);
+
+const grid = new THREE.GridHelper(80, 40, 0x1a2540, 0x121a2e);
+grid.material.transparent = true;
+grid.material.opacity = 0.35;
+floorGroup.add(grid);
+
+const floorRing = new THREE.Mesh(
+  new THREE.RingGeometry(20, 20.05, 128),
+  new THREE.MeshBasicMaterial({
+    color: C.gold, transparent: true, opacity: 0.12,
+    side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+  })
+);
+floorRing.rotation.x = -Math.PI / 2;
+floorGroup.add(floorRing);
+
+const floorRing2 = new THREE.Mesh(
+  new THREE.RingGeometry(32, 32.04, 128),
+  new THREE.MeshBasicMaterial({
+    color: C.gold, transparent: true, opacity: 0.06,
+    side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+  })
+);
+floorRing2.rotation.x = -Math.PI / 2;
+floorGroup.add(floorRing2);
+
+for (let i = 0; i < 16; i++) {
+  const a = (i / 16) * Math.PI * 2;
+  const line = new THREE.Mesh(
+    new THREE.PlaneGeometry(32, 0.012),
+    new THREE.MeshBasicMaterial({
+      color: C.gold, transparent: true, opacity: 0.05,
+      side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+    })
+  );
+  line.rotation.x = -Math.PI / 2;
+  line.rotation.z = a;
+  line.position.x = Math.cos(a) * 16;
+  line.position.z = Math.sin(a) * 16;
+  floorGroup.add(line);
+}
+
+setLoad(76);
+
+/* STARS */
+function stars(count, size, opacity, rMin, rMax) {
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const r = rMin + Math.random() * (rMax - rMin);
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    pos[i*3]     = r * Math.sin(ph) * Math.cos(th);
+    pos[i*3 + 1] = Math.abs(r * Math.cos(ph)) * 0.8;
+    pos[i*3 + 2] = r * Math.sin(ph) * Math.sin(th);
+    const t = Math.random();
+    col[i*3]     = 0.6 + t * 0.4;
+    col[i*3 + 1] = 0.65 + t * 0.3;
+    col[i*3 + 2] = 0.85 + t * 0.15;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return new THREE.Points(geo, new THREE.PointsMaterial({
+    size, transparent: true, opacity, vertexColors: true,
+    sizeAttenuation: true, depthWrite: false
+  }));
+}
+const sFar = stars(isMobile ? 800 : 1600, 0.35, 0.3, 150, 350);
+const sNear = stars(isMobile ? 300 : 600, 0.6, 0.5, 70, 150);
+scene.add(sFar, sNear);
+
+/* DUST */
+const D = isMobile ? 120 : 280;
+const dPos = new Float32Array(D * 3);
+const dSpd = new Float32Array(D);
+for (let i = 0; i < D; i++) {
+  dPos[i*3]     = (Math.random() - 0.5) * 50;
+  dPos[i*3 + 1] = -6 + Math.random() * 25;
+  dPos[i*3 + 2] = (Math.random() - 0.5) * 50;
+  dSpd[i] = 0.08 + Math.random() * 0.25;
+}
+const dGeo = new THREE.BufferGeometry();
+dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({
+  color: 0xFFD066, size: 0.07, transparent: true, opacity: 0.35,
+  blending: THREE.AdditiveBlending, sizeAttenuation: true, depthWrite: false
+}));
+dust.userData.speeds = dSpd;
+scene.add(dust);
+
+setLoad(88);
+
+/* INTERACTION */
+let activeId = 'edu';
+const navItems = document.querySelectorAll('.nav-item');
+
+function setActive(id) {
+  if (activeId === id) return;
+  activeId = id;
+  navItems.forEach(n => n.classList.toggle('active', n.dataset.id === id));
+  platforms.forEach(p => {
+    const on = p.userData.id === id;
+    p.userData.symGlow.material.opacity = on ? 1 : 0.75;
+    p.userData.symGlow.scale.setScalar(on ? 5.8 : 4.5);
+    p.userData.symFresnel.material.uniforms.uInner.value = on ? 1.2 : 0.7;
+    p.userData.surfaceGlow.material.opacity = on ? 0.55 : 0.35;
+  });
+}
+
+navItems.forEach(n => {
+  n.addEventListener('mouseenter', () => setActive(n.dataset.id));
+  n.addEventListener('click', e => {
+    e.preventDefault();
+    setActive(n.dataset.id);
+    const target = document.getElementById('module-' + n.dataset.id);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => redirect(n.dataset.id), 500);
+  });
+});
+
+/* REDIRECT */
+const redirectEl = document.getElementById('redirect');
+const rdText = document.getElementById('rd-text');
+let redirecting = false;
+const TITLES = { edu: 'образование', prod: 'производство', eco: 'экологию' };
+
+function redirect(id) {
+  if (redirecting) return;
+  redirecting = true;
+  rdText.textContent = 'Открываем ' + (TITLES[id] || '');
+  redirectEl.classList.add('active');
+
+  const p = platforms.find(x => x.userData.id === id);
+  if (p) {
+    p.userData.symGlow.material.opacity = 1;
+    p.userData.symGlow.scale.setScalar(10);
+    p.userData.symFresnel.material.uniforms.uInner.value = 2.0;
+    p.userData.surfaceGlow.material.opacity = 0.9;
+    p.userData.surfaceGlow.scale.setScalar(12);
+  }
+
+  setTimeout(() => {
+    window.location.href = LINKS[id];
+    setTimeout(() => {
+      redirectEl.classList.remove('active');
+      redirecting = false;
+      if (p) {
+        p.userData.symGlow.material.opacity = 0.75;
+        p.userData.symGlow.scale.setScalar(4.5);
+        p.userData.symFresnel.material.uniforms.uInner.value = 0.7;
+        p.userData.surfaceGlow.material.opacity = 0.35;
+        p.userData.surfaceGlow.scale.setScalar(6.5);
+      }
+    }, 4000);
+  }, 600);
+}
+
+document.querySelector('.link').addEventListener('click', e => {
+  e.preventDefault();
+  redirect('eco');
+});
+
+/* RAYCAST */
+const ray = new THREE.Raycaster();
+const ptr = new THREE.Vector2(0, 0);
+const TARGETS = platforms.map(p => p.userData.hitbox);
+
+function updatePtr(e) {
+  const x = e.clientX ?? (e.touches?.[0]?.clientX ?? 0);
+  const y = e.clientY ?? (e.touches?.[0]?.clientY ?? 0);
+  ptr.x = (x / W()) * 2 - 1;
+  ptr.y = -(y / H()) * 2 + 1;
+}
+let scheduled = false;
+function scheduleRay() {
+  if (scheduled) return;
+  scheduled = true;
+  requestAnimationFrame(() => {
+    scheduled = false;
+    ray.setFromCamera(ptr, camera);
+    const hits = ray.intersectObjects(TARGETS, false);
+    if (hits.length > 0) {
+      setActive(hits[0].object.parent.userData.id);
+      document.body.style.cursor = 'pointer';
+    } else {
+      document.body.style.cursor = 'default';
+    }
+  });
+}
+window.addEventListener('pointermove', e => { updatePtr(e); scheduleRay(); }, { passive: true });
+window.addEventListener('pointerdown', e => {
+  updatePtr(e);
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects(TARGETS, false);
+  if (hits.length > 0) redirect(hits[0].object.parent.userData.id);
+});
+
+/* RESIZE */
+let rt;
+window.addEventListener('resize', () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => {
+    camera.aspect = W() / H();
+    camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  }, 120);
+});
+
+/* ANIMATION */
+const clock = new THREE.Clock();
+let t = 0;
+let visible = true;
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  t += dt;
+
+  fresnels.forEach(m => m.uniforms.uTime.value = t);
+  if (!visible) return;
+
+  coreInner.rotation.y += dt * 0.05;
+  coreInner.rotation.x = Math.sin(t * 0.15) * 0.08;
+  wire.rotation.copy(coreInner.rotation);
+  wireFine.rotation.y -= dt * 0.08;
+  wireFine.rotation.x = -coreInner.rotation.x * 0.5;
+  fresnelShell.rotation.copy(coreInner.rotation);
+
+  spark.rotation.y -= dt * 0.8;
+  spark.rotation.z += dt * 0.4;
+  spark.scale.setScalar(1 + Math.sin(t * 2.4) * 0.18);
+  coreOrbit.rotation.z += dt * 0.12;
+
+  coreSats.forEach(s => {
+    s.userData.angle += s.userData.speed * dt;
+    const a = s.userData.angle;
+    const v = new THREE.Vector3(Math.cos(a) * 4.0, 0, Math.sin(a) * 4.0);
+    v.applyEuler(new THREE.Euler(coreOrbit.rotation.x, 0, coreOrbit.rotation.z));
+    s.position.copy(v);
+  });
+
+  coreGlow.material.opacity = 0.5 + Math.sin(t * 0.8) * 0.1;
+  coreGlow.scale.setScalar(14 + Math.sin(t * 0.8) * 0.8);
+  coreGlowWhite.material.opacity = 0.8 + Math.sin(t * 2.5) * 0.15;
+
+  reflInner.rotation.copy(coreInner.rotation);
+  reflFresnel.rotation.copy(coreInner.rotation);
+
+  platforms.forEach((p, i) => {
+    const u = p.userData;
+    const on = activeId === u.id;
+
+    u.symSolid.rotation.y += dt * (on ? 1.6 : 0.7);
+    u.symSolid.rotation.x = Math.sin(t * 0.5 + i * 2) * 0.15;
+    u.symFresnel.rotation.copy(u.symSolid.rotation);
+    u.symWire.rotation.copy(u.symSolid.rotation);
+
+    const y = 5.4 + Math.sin(t * 0.9 + i) * 0.15;
+    u.symSolid.position.y = y;
+    u.symFresnel.position.y = y;
+    u.symWire.position.y = y;
+    u.symGlow.position.y = y;
+    u.symRing.position.y = y;
+
+    u.symRing.rotation.z += dt * (on ? 1.2 : 0.5);
+    u.outerRingGroup.rotation.y += dt * 0.15 * (on ? 2 : 1);
+    u.topRing.rotation.z += dt * 0.05;
+
+    const arr = u.sparks.geometry.attributes.position.array;
+    const spd = u.sparks.userData.speeds;
+    for (let j = 0; j < spd.length; j++) {
+      arr[j*3 + 1] += spd[j] * dt * (on ? 1.5 : 1);
+      if (arr[j*3 + 1] > 5.5) arr[j*3 + 1] = 0.3;
+    }
+    u.sparks.geometry.attributes.position.needsUpdate = true;
+
+    u.beamMesh.material.opacity = (on ? 0.09 : 0.035) + Math.sin(t * 0.9 + i) * 0.008;
+
+    const s = on ? 1.06 : 1.0;
+    p.scale.x += (s - p.scale.x) * 0.08;
+    p.scale.y += (s - p.scale.y) * 0.08;
+    p.scale.z += (s - p.scale.z) * 0.08;
+  });
+
+  connections.forEach((c, i) => {
+    const on = activeId === platforms[i].userData.id;
+    c.dots.forEach(d => {
+      const ph = (t * (on ? 0.55 : 0.3) + d.userData.offset) % 1;
+      d.position.copy(c.curve.getPoint(ph));
+      d.material.opacity = (on ? 1 : 0.7) * (1 - Math.abs(ph - 0.5) * 0.4);
+    });
+    c.line.material.opacity = on ? 0.75 : 0.4;
+    c.glowLine.material.opacity = on ? 0.12 : 0.05;
+  });
+
+  floorRing.material.opacity = 0.1 + Math.sin(t * 0.7) * 0.04;
+  floorRing2.material.opacity = 0.05 + Math.sin(t * 0.5 + 1) * 0.025;
+  floorGroup.rotation.y += dt * 0.008;
+
+  sFar.rotation.y += dt * 0.0004;
+  sNear.rotation.y += dt * 0.0009;
+
+  const dArr = dust.geometry.attributes.position.array;
+  for (let i = 0; i < dSpd.length; i++) {
+    dArr[i*3 + 1] += dSpd[i] * dt;
+    if (dArr[i*3 + 1] > 19) {
+      dArr[i*3 + 1] = -6;
+      dArr[i*3]     = (Math.random() - 0.5) * 50;
+      dArr[i*3 + 2] = (Math.random() - 0.5) * 50;
+    }
+  }
+  dust.geometry.attributes.position.needsUpdate = true;
+
+  const oa = t * 0.04;
+  const camX = Math.sin(oa) * 32 * 0.3;
+  const camZ = 32 + Math.cos(oa) * 3;
+  const camY = 6 + ptr.y * 0.8 + Math.sin(oa * 1.3) * 0.3;
+  camera.position.x += (camX + ptr.x * 1.2 - camera.position.x) * 0.03;
+  camera.position.y += (camY - camera.position.y) * 0.03;
+  camera.position.z += (camZ - camera.position.z) * 0.03;
+  camera.lookAt(0, 1.5, 0);
+
+  const v = new THREE.Vector3(0, -1.5, 0);
+  v.project(camera);
+  if (v.z < 1 && v.z > -1) {
+    const x = (v.x * 0.5 + 0.5) * W();
+    const y = (-v.y * 0.5 + 0.5) * H();
+    document.getElementById('caption').style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+  }
+
+  renderer.render(scene, camera);
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { visible = e.isIntersecting; });
+}, { threshold: 0 });
+observer.observe(document.querySelector('.stage'));
+
+animate();
+setTimeout(() => document.getElementById('caption').classList.add('visible'), 2400);
+setLoad(100);
+setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
+</script>
+
+</body>
+</html>
